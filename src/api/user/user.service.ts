@@ -28,7 +28,6 @@ export class UserService {
     const queryObj: Record<string, any> = body.email
       ? { $or: [{ phone: body.phone }, { email: body.email }] }
       : { phone: body.phone }
-
     try {
       const isFound = await UserModel.exists(queryObj)
       if (isFound) {
@@ -42,6 +41,7 @@ export class UserService {
           ...body,
           role: env.ADMIN_EMAIL === body.email ? 'admin' : 'user',
         })
+        console.log(user, 'this is the user');
         const otp_code = generateOTP()
         await tokenService.createOTP(user._id as ObjectId, otp_code, 15)
         const info = await smsManager.sendMessage({
@@ -513,9 +513,10 @@ Valid for 15 minutes. Use to verify your phone number.`,
   // reset password method
   async resetPassword(userId: string, payload: IUpdatePasswordPayload) {
     try {
+      const hashPassword = await convertToHash(payload.newPassword)
       const updatedUser = await UserModel.findByIdAndUpdate(
         userId,
-        { $set: { password: payload.newPassword } },
+        { $set: { password: hashPassword } },
         { new: true }
       ).select(['-password'])
 
