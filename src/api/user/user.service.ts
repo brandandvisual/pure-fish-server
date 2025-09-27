@@ -24,6 +24,7 @@ import {
 import { email } from '@/common/models/email'
 
 export class UserService {
+  // signup method
   async createUser(body: ISignupPayload) {
     const queryObj: Record<string, any> = body.email
       ? { $or: [{ phone: body.phone }, { email: body.email }] }
@@ -68,6 +69,7 @@ Valid for 15 minutes. Use to verify your phone number.`,
     }
   }
 
+  // verify email method
   async verifyEmail(payload: IOTPPayload) {
     try {
       const user = await UserModel.findOne({ email: payload.email })
@@ -113,6 +115,7 @@ Valid for 15 minutes. Use to verify your phone number.`,
     }
   }
 
+  // verify phone method
   async verifyPhone(payload: IOTPPayloadPhone) {
     try {
       const user = await UserModel.findOne({ phone: payload.phone })
@@ -158,6 +161,7 @@ Valid for 15 minutes. Use to verify your phone number.`,
     }
   }
 
+  // request otp
   async requestOTP(payload: ISigninPayload) {
     try {
       const user = await UserModel.findOne({ email: payload.email_phone })
@@ -202,6 +206,7 @@ Valid for 15 minutes. Use to verify your phone number.`,
     }
   }
 
+  // single by creantial methord
   async signinByCredential(payload: ISigninPayload) {
     try {
       const isEmail = z.string().email().safeParse(payload.email_phone).success
@@ -438,6 +443,7 @@ Valid for 15 minutes. Use to verify your phone number.`,
   //   }
   // }
 
+  // get session methord
   async getSession(userId: string) {
     try {
       const user = await UserModel.findById(userId).select(['-password'])
