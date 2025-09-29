@@ -1,0 +1,75 @@
+name: Deploy MERN Project
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VM
+        run: |
+          ssh deploy@${{ secrets.SERVER_IP }} "bash -s" << 'EOF'
+            set -euo pipefail
+            set -x
+            
+            TIMESTAMP=$(date +%s)
+            RELEASE_DIR=/var/www/releases/release-$TIMESTAMP
+            CURRENT_DIR=/var/www/pure-fish-server
+            BACKUP_DIR=/var/www/pure-fish-server-backup
+            ENV_PATH=$RELEASE_DIR/.env
+            REPO=${{ secrets.REPO_SSH_URL }}
+  
+            # Rollback trap
+            trap 'echo "Deployment failed! Restoring previous release..." && rm -rf "$CURRENT_DIR" && cp -a "$BACKUP_DIR" "$CURRENT_DIR" && pm2 reload server-app' ERR
+  
+            # Clone repo into release dir
+            git clone --depth 1 $REPO $RELEASE_DIR
+  
+            # Add .env
+            echo "${{ secrets.ENV_FILE }}" | base64 -d > "$ENV_PATH"
+  
+            # Install & build
+            cd $RELEASE_DIR
+            npm ci --legacy-peer-deps
+            npm run build
+  
+            # Backup current app (atomic swap prep)
+            if [ -d "$BACKUP_DIR" ]; then
+              rm -rf "$BACKUP_DIR"
+            fi
+            if [ -d "$CURRENT_DIR" ]; then
+              cp -a "$CURRENT_DIR" "$BACKUP_DIR"
+            fi
+  
+            # Promote new release
+            rm -rf "$CURRENT_DIR"
+            mv "$RELEASE_DIR" "$CURRENT_DIR"
+  
+            # Restart PM2 without downtime
+            #pm2 reload pure-fish-server-app || pm2 start npm --name "pure-fish-server-app" -- start
+  
+            # Restart pm2
+            cd $CURRENT_DIR
+            pm2 restart pure-fish-server-app || pm2 start npm --name "pure-fish-server-app" --watch --max-memory-restart 500M -- start
+            # pm2 startup
+            pm2 save --force
+  
+            # Keep only last 3 releases to save space
+            cd /var/www/releases
+            ls -1t | tail -n +2 | xargs -I {} rm -rf {}
+  
+            echo "Deployment successful: $(date)"
+          EOF
