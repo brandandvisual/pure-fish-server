@@ -614,11 +614,12 @@ Valid for 15 minutes. Use to verify your phone number.`,
 
     try {
       const user = await UserModel.findOne(queryObj)
+      console.log(user, 'user here');
       if (!user) {
         return ServiceResponse.failure(
           'Invalid email or password',
           null,
-          StatusCodes.NOT_FOUND
+          StatusCodes.UNAUTHORIZED
         )
       }
 
