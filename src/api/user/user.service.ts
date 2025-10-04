@@ -4,7 +4,7 @@ import { smsManager } from '@/common/models/sms-manager'
 import { convertToHash, createJWToken, generateOTP } from '@/common/utils'
 import { env } from '@/common/utils/envConfig'
 import { logger } from '@/server'
-import { Request } from 'express'
+import e, { Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import jwt, { JsonWebTokenError, JwtPayload } from 'jsonwebtoken'
 import { ObjectId } from 'mongoose'
@@ -478,7 +478,8 @@ Valid for 15 minutes. Use to verify your phone number.`,
       const user = await UserModel.findOne({
         $or: [{ email: payload.identifier }, { phone: payload.identifier }]
       })
-
+      console.log(user, 'user here');
+      console.log(payload, 'payload here');
       // Generic message to prevent account enumeration
       const message = 'If account exists, check your email for reset instructions'
 
@@ -494,6 +495,7 @@ Valid for 15 minutes. Use to verify your phone number.`,
         },
         expiresIn: '15m',
       })
+      console.log(accessToken, 'accessToken here');
 
       // Send email only if user has email
       if (user.email) {
@@ -502,12 +504,14 @@ Valid for 15 minutes. Use to verify your phone number.`,
           subject: 'Reset Password',
           html: email.resetPasswordTemplate('/reset-password', accessToken),
         })
-
+        console.log(info, 'info here');
         if (!info.messageId) throw new Error('Failed to send email')
       }
+      console.log(user, 'user here');
 
       return ServiceResponse.success(message, null, StatusCodes.OK)
     } catch (error) {
+      console.log(error, 'error here');
       return ServiceResponse.failure(
         'Internal server error',
         null,
