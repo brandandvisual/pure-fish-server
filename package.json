@@ -5,7 +5,7 @@
   "author": "Brand And Visual",
   "repository": "https://github.com/brandandvisual/ecommerce-backend.git",
   "license": "MIT",
-  "main": "index.ts",
+  "main": "dist/index.js",
   "private": true,
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts | pino-pretty",
