@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Your Trusted Shop",
   "author": "Brand And Visual",
-  "repository": "https://github.com/brandandvisual/ecommerce-backend.git",
+  "repository": "https://github.com/brandandvisual/pure-fish-server.git",
   "license": "MIT",
-  "main": "dist/index.js",
+  "main": "index.ts",
   "private": true,
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts | pino-pretty",
