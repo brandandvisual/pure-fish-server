@@ -113,6 +113,7 @@ class CloudinaryService {
         hasPreviousPage: page > 1,
       }
 
+      console.log(medias, 'medias__________________________')
       return ServiceResponse.success('Media fetched successfully', {
         medias,
         pagination,
