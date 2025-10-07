@@ -90,10 +90,6 @@ class CloudinaryService {
         format: { $ne: 'pdf' },
       }
 
-      if (folder !== 'all-images') {
-        queryObj.folder = folder
-      }
-
       const [medias, totalCount] = await Promise.all([
         MediaModel.find(queryObj)
           .select(['originalName', 'secure_url', 'public_id'])
@@ -113,7 +109,6 @@ class CloudinaryService {
         hasPreviousPage: page > 1,
       }
 
-      console.log(medias, 'medias__________________________')
       return ServiceResponse.success('Media fetched successfully', {
         medias,
         pagination,
