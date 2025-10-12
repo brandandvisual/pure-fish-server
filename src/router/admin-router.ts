@@ -1,6 +1,7 @@
 import { appContentRouter } from '@/api/app-content/app-content-router'
 import { catAdminRouter } from '@/api/category/cat.router'
 import { couponAdminRouter } from '@/api/coupon/coupon.router'
+import { notificationRouter } from '@/api/notifications/notification.router'
 import { orderAdminRouter } from '@/api/order/order.router'
 import { productAdminRouter } from '@/api/product/product.router'
 import { testimonialRouter } from '@/api/testimonial/testimonial.router'
@@ -37,6 +38,10 @@ const routes = [
   {
     path: '/user',
     router: userAdminRouter,
+  },
+  {
+    path: '/notification',
+    router: notificationRouter,
   },
 ]
 

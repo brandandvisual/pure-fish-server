@@ -36,6 +36,7 @@
     "pino": "^9.4.0",
     "pino-http": "^10.0.0",
     "slugify": "^1.6.6",
+    "socket.io": "^4.8.1",
     "sslcommerz-lts": "^1.1.0",
     "swagger-ui-express": "^5.0.0",
     "useragent": "^2.3.0",

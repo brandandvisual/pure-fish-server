@@ -4,6 +4,7 @@ import { adminRouter } from './admin-router'
 import { cloudRouter } from './cloud-router'
 import { publicRouter } from './public-router'
 import { guestRouter } from '@/api/guest/guest-router'
+import { messageRouter } from './message-router'
 
 export const router = Router()
 
@@ -36,6 +37,10 @@ const routes = [
     path: '/public',
     router: publicRouter,
   },
+  {
+    path: '/message',
+    router: messageRouter,
+  }
 
 ]
 

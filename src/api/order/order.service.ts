@@ -7,6 +7,10 @@ import { ProductModel } from '../product/product.model'
 import { CouponModel } from '../coupon/coupon.model'
 import { createUniqueTransaction } from '@/common/utils'
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns'
+import { notificationService } from '../notifications/notification.service'
+import { userService } from '../user/user.service'
+import { io } from '@/server'
+import { email } from '@/common/models/email'
 
 class OrderService {
   async createOrder(userId: string, payload: IOrderPayload) {
@@ -22,6 +26,13 @@ class OrderService {
           StatusCodes.BAD_REQUEST
         )
       }
+      const userResponse = await userService.getSession(userId)
+
+      if (!userResponse.success || !userResponse.responseObject) {
+        return userResponse
+      }
+
+      const user = userResponse.responseObject
 
       // Check product availability and calculate subtotal
       let subtotal = 0
@@ -124,7 +135,7 @@ class OrderService {
       }
 
       // 4. Calculate final amount (subtotal - discount + shipping)
-      const shippingFee = 100
+      const shippingFee = 0
 
       const finalAmount = Math.ceil(subtotal - discountAmount) + shippingFee
 
@@ -163,7 +174,6 @@ class OrderService {
           },
         ],
       })
-
       // 7. Save the order and update product stocks in a transaction
       const session = await OrderModel.startSession()
       session.startTransaction()
@@ -189,6 +199,50 @@ class OrderService {
       const createdOrder = await OrderModel.findById(order._id)
         .populate('products.product', 'title')
         .populate('user', 'fullName')
+
+      // notification 
+      const notification = await notificationService.createNotification({
+        amount: order.finalAmount,
+        customerName: user.fullName || 'Customer',
+        message: `${user.fullName || ' Customer'} placed a new order`,
+        orderId: order._id as Types.ObjectId,
+        title: 'A new order is placed!',
+        type: 'order_success',
+        isRead: false,
+      })
+      io.emit('notification', notification)
+      // send email to user
+      // email.sendEmail({
+      //   to: user.email,
+      //   subject: 'Order Received - Corporate Ask (Manual)',
+      //   html: email.orderConfirmTemplate({
+      //     order: {
+      //       customer: user.fullName,
+      //       createdAt: order.createdAt.toString(),
+      //       paymentStatus: order.paymentStatus,
+      //       totalAmount: order.finalAmount,
+      //       invoiceNumber: order.invoiceNumber
+
+      //     },
+      //     products: order.products.map((product) => {
+      //       if (product.productType === 'product-service') {
+      //         if (!product.service) return
+      //         return {
+      //           productType: product.productType,
+      //           title: product.productName,
+      //           Category: product?.service?.product?.category,
+      //           price: product.service.basePrice,
+      //         }
+      //       } else if (product.productType === 'ebook') {
+      //         return {
+      //           productType: product.productType,
+      //           title: product.productName,
+      //           price: product.ebook?.price,
+      //         }
+      //       }
+      //     }),
+      //   }),
+      // }).catch((err) => console.error('Email send error (manual):', err))
 
       return ServiceResponse.success(
         'Order created successfully',

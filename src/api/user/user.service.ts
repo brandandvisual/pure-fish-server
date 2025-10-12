@@ -478,8 +478,6 @@ Valid for 15 minutes. Use to verify your phone number.`,
       const user = await UserModel.findOne({
         $or: [{ email: payload.identifier }, { phone: payload.identifier }]
       })
-      console.log(user, 'user here');
-      console.log(payload, 'payload here');
       // Generic message to prevent account enumeration
       const message = 'If account exists, check your email for reset instructions'
 
@@ -507,7 +505,6 @@ Valid for 15 minutes. Use to verify your phone number.`,
         console.log(info, 'info here');
         if (!info.messageId) throw new Error('Failed to send email')
       }
-      console.log(user, 'user here');
 
       return ServiceResponse.success(message, null, StatusCodes.OK)
     } catch (error) {
@@ -614,7 +611,6 @@ Valid for 15 minutes. Use to verify your phone number.`,
 
     try {
       const user = await UserModel.findOne(queryObj)
-      console.log(user, 'user here');
       if (!user) {
         return ServiceResponse.failure(
           'Invalid email or password',
@@ -695,12 +691,14 @@ Valid for 15 minutes. Use to verify your phone number.`,
   }
 
   async updateProfile(req: Request, payload: IUpdateProfilePayload) {
-    const allowedFields = ['firstName', 'lastName', 'phone']
+    const allowedFields = ['fullName', 'image']
+
     const updateFields = Object.fromEntries(
       Object.entries(payload).filter(
         ([key, value]) => allowedFields.includes(key) && value !== undefined
       )
     )
+
     if (Object.keys(updateFields).length === 0) {
       return ServiceResponse.failure(
         'No valid fields provided to update',
@@ -714,14 +712,19 @@ Valid for 15 minutes. Use to verify your phone number.`,
     try {
       const updatedUser = await UserModel.findByIdAndUpdate(
         userId,
-        {
-          $set: updateFields,
-        },
+        { $set: updateFields },
         { new: true }
       ).select(['-password', '-otp'])
 
+      if (!updatedUser) {
+        return ServiceResponse.failure(
+          'User not found',
+          null,
+          StatusCodes.NOT_FOUND
+        )
+      }
       return ServiceResponse.success(
-        'Profile updated successfully',
+        'My account updated successfully',
         updatedUser,
         StatusCodes.OK
       )

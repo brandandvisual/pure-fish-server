@@ -7,7 +7,8 @@ import helmet from 'helmet'
 import { pino } from 'pino'
 import { errorMiddleware } from './common/middleware/error.middleware'
 import { router } from './router'
-
+import { createServer } from 'node:http'
+import { Server } from 'socket.io'
 const logger = pino({ name: 'server start' })
 const app: Express = express()
 
@@ -15,14 +16,12 @@ const app: Express = express()
 app.set('trust proxy', true)
 
 const allowedOrigins = env.CORS_ORIGIN
-console.log(allowedOrigins, 'allowedOrigins');
 // Middlewares
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use('/static', express.static('public'))
 app.use(cors({
     origin: (origin, callback) => {
-        console.log(origin, 'origin');
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true)
         } else {
@@ -48,4 +47,13 @@ app.use(openAPIRouter)
 // Error handlers
 app.use([errorMiddleware.notFound, errorMiddleware.globalError])
 
-export { app, logger }
+//socket 
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: env.CLIENT_URL,
+        credentials: true,
+    },
+})
+export { httpServer, io, app, logger }
+
