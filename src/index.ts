@@ -1,12 +1,19 @@
 import { env } from '@/common/utils/envConfig'
-import { app, logger } from '@/server'
+import { httpServer, io, logger } from '@/server'
 import { dbConnect } from './db/db-connect'
 
 async function startServer() {
   try {
     await dbConnect({ dbName: env.DATABASE_NAME })
 
-    const server = app.listen(env.PORT, () => {
+    io.on('connection', (socket) => {
+      logger.info(`[+] ${socket.id} is connected`)
+      socket.on('disconnect', () => {
+        logger.info(`[-] ${socket.id} id disconnected`)
+      })
+    })
+
+    const server = httpServer.listen(env.PORT, () => {
       const { NODE_ENV, HOST, PORT } = env
       logger.info(
         `[+] Server (${NODE_ENV}) running on port http://${HOST}:${PORT}`

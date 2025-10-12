@@ -12,6 +12,7 @@ import {
   zodResetPassSchema,
   zodTokenSchema,
   zodUpdatePasswordSchema,
+  zodUpdateProfileSchema,
 } from './user.zod-schema'
 
 export const userRouter = Router()
@@ -92,11 +93,11 @@ userRouter.patch('/update-password', [
 //   userController.getUser,
 // ])
 
-// userRouter.patch('/update-profile', [
-//   authMiddleware.verifyAuthToken,
-//   validateRequestPayload(zodUpdateProfileSchema),
-//   userController.updateProfile,
-// ])
+userRouter.patch('/update-profile', [
+  authMiddleware.verifyAuthToken,
+  validateRequestPayload(zodUpdateProfileSchema),
+  userController.updateProfile,
+])
 
 userRouter.patch('/update-address', [
   authMiddleware.verifyAuthToken,

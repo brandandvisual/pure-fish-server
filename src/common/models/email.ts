@@ -662,6 +662,471 @@ export class Email {
   </html>
   `
   }
+  public orderConfirmTemplate({
+    products,
+    order,
+  }: {
+    products: (
+      | {
+        productType: 'product-service'
+        title: string
+        Category: string
+        price: number
+      }
+      | {
+        productType: 'ebook'
+        title: string
+        price: number
+      }
+    )[]
+    order: {
+      paymentStatus: string
+      totalAmount: number
+      invoiceNumber: string
+      customer: string
+      tran_id: string
+      createdAt: string
+    }
+  }) {
+    function service({
+      title,
+      Category,
+      price,
+    }: {
+      title: string
+      Category: string
+      price: number
+    }) {
+      return `
+          <div class="product-item">
+						<div class="product-header">
+							<div class="product-name">${title}</div>
+							<div class="product-type">Service</div>
+						</div>
+						<div class="product-details">
+							<div class="product-detail-row">
+								<span class="product-detail-label">Category:</span>
+								<span class="product-detail-value">${Category}</span>
+							</div>
+							<div class="product-detail-row">
+								<span class="product-detail-label">Price:</span>
+								<span class="product-detail-value price">৳${price}</span>
+							</div>
+						</div>
+					</div>
+      `
+    }
+    function ebook({ title, price }: { title: string; price: number }) {
+      return `
+        <div class="product-item">
+          <div class="product-header">
+            <div class="product-name">
+              ${title}
+            </div>
+            <div class="product-type">Ebook</div>
+          </div>
+          <div class="product-details">
+            <div class="product-detail-row">
+              <span class="product-detail-label">Price:</span>
+              <span class="product-detail-value price">৳${price}</span>
+            </div>
+          </div>
+        </div>
+      `
+    }
+
+    let listMarkup = ''
+
+    products.forEach((product) => {
+      if (product.productType === 'product-service') {
+        listMarkup += service(product)
+      } else if (product.productType === 'ebook') {
+        listMarkup += ebook(product)
+      }
+    })
+    return `
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Order Confirmation - Corporate Ask</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+				line-height: 1.6;
+				color: #333;
+				background-color: #f8f9fa;
+			}
+
+			.email-container {
+				max-width: 600px;
+				margin: 0 auto;
+				background-color: #ffffff;
+				box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			}
+
+			.header {
+				background: linear-gradient(135deg, #ed1b24 0%, #000000 100%);
+				color: white;
+				padding: 30px 20px;
+				text-align: center;
+			}
+
+			.header h1 {
+				font-size: 28px;
+				font-weight: 700;
+				margin-bottom: 5px;
+			}
+
+			.header p {
+				font-size: 14px;
+				opacity: 0.9;
+				margin-bottom: 20px;
+			}
+
+			.order-number {
+				background-color: rgba(255, 255, 255, 0.2);
+				padding: 10px 20px;
+				border-radius: 25px;
+				display: inline-block;
+				font-weight: 600;
+			}
+
+			.content {
+				padding: 30px 20px;
+			}
+
+			.greeting {
+				font-size: 18px;
+				margin-bottom: 20px;
+				color: #2c3e50;
+			}
+
+			.order-summary {
+				background-color: #f8f9fa;
+				border-radius: 8px;
+				padding: 20px;
+				margin-bottom: 25px;
+			}
+
+			.order-summary h3 {
+				color: #495057;
+				margin-bottom: 15px;
+				font-size: 16px;
+				text-transform: uppercase;
+				letter-spacing: 0.5px;
+			}
+
+			.summary-grid {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 15px;
+			}
+
+			.summary-item {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+
+			.full-col {
+				grid-column: 1 / -1;
+			}
+
+			.summary-label {
+				font-weight: 600;
+				color: #6c757d;
+			}
+
+			.summary-value {
+				font-weight: 700;
+				color: #2c3e50;
+			}
+
+			.status-badge {
+				padding: 4px 12px;
+				border-radius: 20px;
+				font-size: 12px;
+				font-weight: 600;
+				text-transform: uppercase;
+			}
+
+			.status-pending {
+				background-color: #fff3cd;
+				color: #856404;
+			}
+
+			.status-success {
+				background-color: #d4edda;
+				color: #155724;
+			}
+
+			.status-processing {
+				background-color: #cce7ff;
+				color: #004085;
+			}
+
+			.products-section {
+				margin-bottom: 25px;
+			}
+
+			.section-title {
+				font-size: 18px;
+				font-weight: 700;
+				color: #2c3e50;
+				margin-bottom: 15px;
+				padding-bottom: 8px;
+				border-bottom: 2px solid #e9ecef;
+			}
+
+			.product-item {
+				border: 1px solid #e9ecef;
+				border-radius: 8px;
+				padding: 20px;
+				margin-bottom: 15px;
+				background-color: #ffffff;
+			}
+
+			.product-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-start;
+				margin-bottom: 10px;
+			}
+
+			.product-name {
+				font-size: 16px;
+				font-weight: 700;
+				color: #2c3e50;
+				flex: 1;
+			}
+
+			.product-type {
+				background-color: #667eea;
+				color: white;
+				padding: 4px 8px;
+				border-radius: 4px;
+				font-size: 11px;
+				font-weight: 600;
+				text-transform: uppercase;
+				margin-left: 10px;
+			}
+
+			.product-details {
+				margin-top: 10px;
+			}
+
+			.product-detail-row {
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 5px;
+				font-size: 14px;
+			}
+
+			.product-detail-label {
+				color: #6c757d;
+				font-weight: 500;
+			}
+
+			.product-detail-value {
+				color: #2c3e50;
+				font-weight: 600;
+			}
+
+			.price {
+				font-size: 18px;
+				font-weight: 700;
+				color: #28a745;
+			}
+
+			.delivery-section {
+				background-color: #f8f9fa;
+				border-radius: 8px;
+				padding: 20px;
+				margin-bottom: 25px;
+			}
+
+			.address-grid {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 10px;
+				margin-top: 10px;
+			}
+
+			.address-item {
+				font-size: 14px;
+			}
+
+			.address-label {
+				font-weight: 600;
+				color: #6c757d;
+				display: block;
+				margin-bottom: 2px;
+			}
+
+			.address-value {
+				color: #2c3e50;
+			}
+
+			.total-section {
+				background: linear-gradient(135deg, #ed1b24 0%, #000000 100%);
+				color: white;
+				padding: 20px;
+				border-radius: 8px;
+				text-align: center;
+			}
+
+			.total-amount {
+				font-size: 24px;
+				font-weight: 700;
+				margin-bottom: 5px;
+			}
+
+			.total-label {
+				font-size: 14px;
+				opacity: 0.9;
+			}
+
+			.footer {
+				background-color: #2c3e50;
+				color: white;
+				padding: 10px 20px;
+				text-align: center;
+			}
+
+			.footer h4 {
+				margin-bottom: 10px;
+				font-size: 16px;
+			}
+
+			.footer p {
+				font-size: 14px;
+				opacity: 0.8;
+				margin-bottom: 5px;
+			}
+
+			.footer a {
+				color: #74b9ff;
+				text-decoration: none;
+			}
+
+			.divider {
+				height: 1px;
+				background-color: #e9ecef;
+				margin: 20px 0;
+			}
+
+			@media (max-width: 600px) {
+				.email-container {
+					margin: 0;
+					box-shadow: none;
+				}
+
+				.header {
+					padding: 20px 15px;
+				}
+
+				.header h1 {
+					font-size: 24px;
+				}
+
+				.content {
+					padding: 20px 15px;
+				}
+
+				.summary-grid {
+					grid-template-columns: 1fr;
+					gap: 10px;
+				}
+
+				.address-grid {
+					grid-template-columns: 1fr;
+				}
+
+				.product-header {
+					flex-direction: column;
+					align-items: flex-start;
+				}
+
+				.product-type {
+					margin-left: 0;
+					margin-top: 5px;
+				}
+
+				.total-amount {
+					font-size: 20px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="email-container">
+			<!-- Header -->
+			<div class="header">
+				<h1>Corporate Ask</h1>
+				<p>Top Bangladeshi CV Writing Company</p>
+				<div class="order-number">Order #${order.tran_id}</div>
+			</div>
+
+			<!-- Content -->
+			<div class="content">
+				<div class="greeting">Thank you for your order! 🎉</div>
+
+				<!-- Order Summary -->
+				<div class="order-summary">
+					<h3>Order Summary</h3>
+					<div class="summary-grid">
+						<div class="summary-item">
+							<span class="summary-label">Customer:</span>
+							<span class="summary-value">${order.customer}</span>
+						</div>
+						<div></div>
+						<div class="summary-item">
+							<span class="summary-label">Date:</span>
+							<span class="summary-value">${new Date(order.createdAt).toLocaleDateString(
+      'en-US',
+      { day: '2-digit', month: 'short', year: 'numeric' }
+    )}</span>
+						</div>
+						<div class="summary-item">
+							<span class="summary-label">Payment:</span>
+							<span class="status-badge status-success">${order.paymentStatus}</span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Products Section -->
+				<div class="products-section">
+					<h2 class="section-title">Order Details</h2>
+
+					${listMarkup}
+					
+				</div>
+
+				<!-- Total Amount -->
+				<div class="total-section">
+					<div class="total-amount">৳${order.totalAmount}</div>
+					<div class="total-label">Total Amount</div>
+				</div>
+			</div>
+
+			<!-- Footer -->
+			<div class="footer">
+				<p style="margin-top: 15px; font-size: 12px">
+					© ${new Date().getFullYear()} Corporate Ask. All rights reserved.
+				</p>
+			</div>
+		</div>
+	</body>
+</html>`
+  }
 }
 
 export const email = new Email()

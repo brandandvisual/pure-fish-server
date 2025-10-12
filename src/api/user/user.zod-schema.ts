@@ -119,24 +119,16 @@ export const zodResetPassSchema = z.object({
 })
 export const zodUpdateProfileSchema = z.object({
   body: z.object({
-    firstName: z
-      .string()
-      .optional()
-      .refine((value) => !value || (value.length >= 2 && value.length <= 15), {
-        message: 'First name must be 2 to 15 characters long.',
+    fullName: z
+      .string({
+        required_error: 'Name is required',
       }),
-    lastName: z
-      .string()
-      .optional()
-      .refine((value) => !value || (value.length >= 2 && value.length <= 15), {
-        message: 'Last name must be 2 to 15 characters long.',
-      }),
-    phone: z
-      .string()
-      .optional()
-      .refine((value) => !value || /^(01\d{9}|(\+8801\d{9}))$/.test(value), {
-        message: 'Phone number must be a valid Bangladeshi number.',
-      }),
+    image: z
+      .string({
+        invalid_type_error: 'Image must be string',
+      })
+      .url('Image must be a valid URL')
+      .optional(),
   }),
 })
 
