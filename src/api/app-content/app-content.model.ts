@@ -1,27 +1,22 @@
 import { Document, model, Schema, Types } from 'mongoose'
 import { IAppContentPayload } from './app-content-zod-schema'
+import { ref } from 'node:process';
 
-interface IAppContent extends Document, IAppContentPayload {}
+interface IAppContent extends Document, IAppContentPayload { }
 
-const SuccessStatsSchema = new Schema(
-  {
-    serviceName: {
-      type: String,
-      required: true,
-    },
-    successCount: {
-      type: String,
-      required: true,
-    },
+const WhyPureFishSchema = new Schema({
+  description: {
+    type: String,
+    required: true,
   },
-  { _id: false }
-)
-
+  image: [{ type: Schema.Types.ObjectId, ref: 'Media', required: true }],
+});
 const AppContentSchema = new Schema<IAppContent>(
   {
     privacyPolicy: String,
     refundPolicy: String,
     termsAndConditions: String,
+    whyPureFish: WhyPureFishSchema,
   },
   {
     timestamps: true,

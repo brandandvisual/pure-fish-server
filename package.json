@@ -35,6 +35,7 @@
     "nodemailer": "^6.9.16",
     "pino": "^9.4.0",
     "pino-http": "^10.0.0",
+    "redis": "^5.8.3",
     "slugify": "^1.6.6",
     "socket.io": "^4.8.1",
     "sslcommerz-lts": "^1.1.0",
