@@ -1,6 +1,5 @@
 import { authMiddleware } from '@/common/middleware/auth.middleware'
 import { validateRequestPayload } from '@/common/utils/httpHandlers'
-import { router } from '@/router'
 import { Router } from 'express'
 import { zodAppContentSchema } from './app-content-zod-schema'
 import { appContentController } from './app-content-controller'

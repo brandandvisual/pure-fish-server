@@ -21,6 +21,7 @@ class CategoryController {
   }
 
   public async getAllCategories(req: Request, res: Response) {
+
     const serviceRes = await catService.getAllCategories()
     return sendServiceResponse(serviceRes, res)
   }

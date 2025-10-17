@@ -25,6 +25,7 @@ class AppContentService {
         StatusCodes.CREATED
       )
     } catch (error) {
+      console.log(error);
       return ServiceResponse.failure(
         'Internal server error',
         null,
@@ -32,28 +33,27 @@ class AppContentService {
       )
     }
   }
-
   async getAppContent() {
     try {
       const content = await AppContentModel.find()
-        .populate('featuredMedia', 'secure_url')
-        .populate('successStories', 'secure_url')
-        .populate('partners', 'secure_url')
-        .populate('teamMembers.avatar', 'secure_url')
-        .populate('mediaPresence', 'secure_url')
+        .populate('whyPureFish.image')
+
       if (content.length <= 0) {
         return ServiceResponse.failure(
-          'App Content is not found!',
+          'App Content not found',
           null,
           StatusCodes.NOT_FOUND
         )
       }
+
+      const data = content[0]
       return ServiceResponse.success(
         'Content fetched successfully',
-        content[0],
+        data,
         StatusCodes.OK
       )
     } catch (error) {
+      console.error('Get AppContent Error:', error)
       return ServiceResponse.failure(
         'Internal server error',
         null,
